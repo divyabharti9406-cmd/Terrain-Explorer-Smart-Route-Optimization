@@ -4,224 +4,146 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Terrain Explorer | Smart Route Optimization</title>
+<title>CalSymPy | Terrain Explorer</title>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
 <style>
+:root {
+  --bg:#f5f8f5;
+  --panel:#ffffff;
+  --green:#18865b;
+  --dark:#173b2c;
+  --muted:#64756b;
+  --border:#e1eae3;
+  --light:#eaf5ed;
+  --orange:#e5a33c;
+  --red:#d85b51;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-
-:root{
- --bg:#f5f8f7;
- --white:#ffffff;
- --green:#18865e;
- --dark:#183a31;
- --muted:#75847e;
- --border:#e4ebe7;
- --light:#eaf5ef;
-}
-
+html{scroll-behavior:smooth}
 body{
- font-family:Arial,sans-serif;
- background:var(--bg);
- color:var(--dark);
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--bg);
+  color:#26382e;
+  line-height:1.6;
 }
-
 header{
- background:white;
- border-bottom:1px solid var(--border);
- padding:17px 5%;
- display:flex;
- justify-content:space-between;
- align-items:center;
- position:sticky;
- top:0;
- z-index:10;
+  background:#fff;
+  border-bottom:1px solid var(--border);
+  padding:15px 5%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  position:sticky;
+  top:0;
+  z-index:20;
 }
-
-.logo{font-size:21px;font-weight:800;color:var(--green)}
-.logo span{color:#263f36}
-
-.status{
- background:#e6f6ed;
- color:#168451;
- padding:7px 13px;
- border-radius:20px;
- font-size:12px;
- font-weight:bold;
+.logo{font-size:21px;font-weight:800;color:var(--dark)}
+.logo span{color:var(--green)}
+nav{display:flex;gap:17px;flex-wrap:wrap}
+nav a{
+  text-decoration:none;
+  color:#52645a;
+  font-size:13px;
+  font-weight:600;
 }
-
-main{max-width:1450px;margin:auto;padding:30px 5%}
-
-.hero{
- background:linear-gradient(120deg,#e9f5ee,#f7faf8);
- padding:32px;
- border-radius:17px;
- margin-bottom:25px;
- border:1px solid #dcebe1;
+nav a:hover{color:var(--green)}
+.container{width:min(1200px,92%);margin:auto}
+.hero{padding:55px 0 35px}
+.tag{
+  display:inline-block;
+  padding:6px 12px;
+  background:#e3f4e9;
+  color:var(--green);
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
 }
-
-.hero h1{font-size:32px;margin-bottom:10px}
-.hero p{color:var(--muted);line-height:1.7}
-
-.stats{
- display:grid;
- grid-template-columns:repeat(4,1fr);
- gap:15px;
- margin-bottom:25px;
+h1{font-size:clamp(30px,5vw,48px);line-height:1.15;color:var(--dark);margin:17px 0}
+h2{font-size:25px;color:var(--dark);margin-bottom:12px}
+h3{font-size:17px;color:var(--dark);margin-bottom:9px}
+p{color:#5e7065;margin:8px 0}
+.section{padding:35px 0}
+.section-head{margin-bottom:20px}
+.section-head p{max-width:750px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:15px;
+  padding:21px;
+  box-shadow:0 4px 16px rgba(30,70,45,.035);
+  min-width:0;
 }
-
-.stat,.panel{
- background:white;
- border:1px solid var(--border);
- border-radius:13px;
- padding:19px;
-}
-
-.stat small{color:var(--muted)}
-.stat h2{font-size:25px;margin-top:10px;color:var(--green)}
-
-.section-title{font-size:20px;margin:26px 0 14px}
-
-.visual-grid{
- display:grid;
- grid-template-columns:1.35fr 1fr;
- gap:18px;
-}
-
-.panel h3{font-size:16px;margin-bottom:8px}
-.sub{font-size:12px;color:var(--muted);margin-bottom:15px}
-
-#terrain{
- width:100%;
- height:420px;
- display:block;
- background:#edf5ef;
- border-radius:10px;
-}
-
-#heatmap{
- width:100%;
- height:420px;
- display:block;
- background:white;
- border-radius:10px;
-}
-
-.controls{
- display:grid;
- grid-template-columns:1fr 1fr;
- gap:18px;
- margin-top:20px;
-}
-
-.control-group{margin-bottom:15px}
-.control-group label{
- display:block;
- font-size:13px;
- font-weight:bold;
- margin-bottom:10px;
-}
-
-input[type=range]{width:100%;accent-color:var(--green)}
-
-input[type=number]{
- width:100%;
- padding:10px;
- border:1px solid var(--border);
- border-radius:7px;
-}
-
+.hero-cards{margin-top:25px}
+.stat{font-size:25px;font-weight:800;color:var(--green)}
+.small{font-size:12px;color:var(--muted)}
 button{
- border:none;
- background:var(--green);
- color:white;
- padding:12px 17px;
- border-radius:8px;
- cursor:pointer;
- font-weight:bold;
+  border:0;border-radius:9px;padding:10px 15px;
+  background:var(--green);color:white;font-weight:700;
+  cursor:pointer;margin:5px 4px 5px 0;
 }
-
-button:hover{background:#116c4a}
-
-.secondary{
- background:#edf5ef;
- color:var(--green);
+button.secondary{background:#e8f2eb;color:var(--dark)}
+button:hover{opacity:.88}
+input,select{
+  padding:10px;border:1px solid var(--border);
+  border-radius:8px;background:white;width:100%;margin:5px 0 12px;
 }
-
-.buttons{display:flex;gap:10px;flex-wrap:wrap}
-
-.math-grid{
- display:grid;
- grid-template-columns:repeat(3,1fr);
- gap:14px;
+label{font-size:13px;font-weight:bold;color:#53665b}
+#terrain3d{
+  width:100%;height:430px;background:#eaf3ed;
+  border-radius:12px;overflow:hidden;
 }
-
-.math-card{
- background:white;
- border:1px solid var(--border);
- padding:18px;
- border-radius:12px;
+#heatmap{
+  width:100%;height:auto;display:block;
+  border-radius:10px;background:#f4f6f2;
 }
-
-.math-card small{color:var(--muted)}
+.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;margin-top:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.green{background:#35a66b}.yellow{background:#edc34b}.red{background:#df6258}
 .formula{
- font-size:17px;
- font-weight:bold;
- color:var(--green);
- margin:13px 0;
- overflow-wrap:anywhere;
+  background:#f0f7f1;padding:14px;border-radius:9px;
+  color:#174d35;font-family:Georgia,serif;
+  margin:10px 0;overflow-wrap:anywhere;
 }
-
 .result{
- font-size:14px;
- line-height:1.7;
- color:var(--muted);
+  background:#eaf5ed;padding:13px;border-radius:9px;
+  margin-top:10px;color:#174d35;
 }
-
-#pointResult{
- margin-top:12px;
- background:#edf7f0;
- border-radius:8px;
- padding:13px;
- font-size:13px;
- line-height:1.8;
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+th{color:var(--dark);background:#f2f7f3}
+pre{
+  background:#17251e;color:#d9f2df;padding:17px;
+  border-radius:10px;overflow-x:auto;font-size:12px;
+  line-height:1.65;margin:12px 0;white-space:pre;
 }
-
-.legend{
- display:flex;
- flex-wrap:wrap;
- gap:14px;
- font-size:12px;
- margin-top:13px;
+code{font-family:Consolas,monospace}
+ul,ol{padding-left:22px;color:#5e7065}
+li{margin:7px 0}
+.status{
+  display:inline-block;padding:4px 9px;border-radius:20px;
+  background:#fff3d8;color:#94651b;font-size:11px;font-weight:bold;
 }
-
-.dot{
- display:inline-block;
- width:10px;
- height:10px;
- border-radius:50%;
- margin-right:5px;
+.placeholder{
+  border:1px dashed #a9bdb0;border-radius:10px;
+  padding:15px;background:#fafdfa;color:#64756b;
+  margin:10px 0;font-size:13px;
 }
-
 footer{
- text-align:center;
- padding:25px;
- color:var(--muted);
- font-size:12px;
+  margin-top:40px;padding:30px;text-align:center;
+  background:#173b2c;color:#e4f2e8;
 }
-
-@media(max-width:850px){
- .visual-grid,.controls{grid-template-columns:1fr}
- .stats{grid-template-columns:repeat(2,1fr)}
- .math-grid{grid-template-columns:repeat(2,1fr)}
- #terrain,#heatmap{height:340px}
-}
-
-@media(max-width:500px){
- .math-grid{grid-template-columns:1fr}
- .hero h1{font-size:25px}
+footer p{color:#c6d8cb}
+@media(max-width:800px){
+  header{align-items:flex-start;flex-direction:column}
+  nav{gap:10px}
+  .grid,.grid-3{grid-template-columns:1fr}
+  #terrain3d{height:330px}
 }
 </style>
 </head>
@@ -229,720 +151,1063 @@ footer{
 <body>
 
 <header>
- <div class="logo">⛰ TERRAIN <span>EXPLORER</span></div>
- <div class="status">● MODEL ACTIVE</div>
+  <div class="logo">Cal<span>SymPy</span> | Terrain Explorer</div>
+  <nav>
+    <a href="#overview">Overview</a>
+    <a href="#model">Model</a>
+    <a href="#terrain">3D Terrain</a>
+    <a href="#analysis">Analysis</a>
+    <a href="#algorithm">Algorithm</a>
+    <a href="#testing">Testing</a>
+    <a href="#team">Team</a>
+  </nav>
 </header>
 
-<main>
+<main class="container">
 
-<section class="hero">
- <h1>Explore. Analyse. Optimize.</h1>
- <p>
- An intelligent terrain modelling platform using partial derivatives,
- gradient calculations and pathfinding algorithms to identify
- suitable routes across uneven landscapes.
- </p>
+<!-- HERO -->
+<section class="hero" id="overview">
+  <span class="tag">MATH + PYTHON + REAL-WORLD APPLICATION</span>
+  <h1>Terrain Analysis &<br>Intelligent Route Optimization</h1>
+  <p>
+    Using partial derivatives with Python's SymPy to analyse slopes
+    and optimise routes in terrain modelling.
+  </p>
+
+  <div class="grid-3 hero-cards">
+    <div class="card">
+      <div class="stat">01</div>
+      <h3>Analyse Terrain</h3>
+      <p>Study elevation changes and calculate the steepness of terrain.</p>
+    </div>
+    <div class="card">
+      <div class="stat">02</div>
+      <h3>Apply Calculus</h3>
+      <p>Use partial derivatives, gradient and linear approximation.</p>
+    </div>
+    <div class="card">
+      <div class="stat">03</div>
+      <h3>Optimise Routes</h3>
+      <p>Compare routes and identify a path with a lower slope-related cost.</p>
+    </div>
+  </div>
 </section>
 
-<section class="stats">
- <div class="stat">
-  <small>Terrain Model</small>
-  <h2>3D Surface</h2>
- </div>
- <div class="stat">
-  <small>Grid Resolution</small>
-  <h2 id="gridStat">45 × 45</h2>
- </div>
- <div class="stat">
-  <small>Optimized Distance</small>
-  <h2 id="distanceStat">--</h2>
- </div>
- <div class="stat">
-  <small>Average Route Slope</small>
-  <h2 id="slopeStat">--</h2>
- </div>
+<!-- PROBLEM AND OBJECTIVES -->
+<section class="section">
+  <div class="section-head">
+    <h2>01. Problem Statement</h2>
+    <p>
+      Travelling across uneven terrain can be difficult because some routes
+      have steep slopes. Selecting a suitable route requires understanding
+      elevation changes and comparing possible paths.
+    </p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Why is this problem important?</h3>
+      <ul>
+        <li>Steep paths can require more effort.</li>
+        <li>Elevation changes affect route suitability.</li>
+        <li>Manual route selection may overlook easier alternatives.</li>
+        <li>Mathematical analysis can support better route decisions.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Project Objectives</h3>
+      <ol>
+        <li>Build a mathematical terrain model.</li>
+        <li>Calculate partial derivatives.</li>
+        <li>Measure terrain steepness using the gradient.</li>
+        <li>Visualise elevation and slope variation.</li>
+        <li>Compare and optimise possible routes.</li>
+      </ol>
+    </div>
+  </div>
 </section>
 
-<h2 class="section-title">Terrain Visualization</h2>
+<!-- MODEL -->
+<section class="section" id="model">
+  <div class="section-head">
+    <h2>02. Mathematical Model</h2>
+    <p>
+      We represent the terrain as a function of two horizontal coordinates.
+      The height at each location is calculated using the following equation.
+    </p>
+  </div>
 
-<div class="visual-grid">
+  <div class="card">
+    <h3>Terrain Function</h3>
+    <div class="formula">
+      z = f(x,y) = 0.08(x² + y²) + 4e<sup>-((x-2)²+(y-1)²)/5</sup>
+    </div>
 
-<div class="panel">
- <h3>Interactive 3D Terrain</h3>
- <p class="sub">Drag to rotate · Scroll to zoom · Right-click to pan</p>
- <div id="terrain"></div>
- <div class="legend">
-  <span><i class="dot" style="background:#18865e"></i>Terrain</span>
-  <span><i class="dot" style="background:#e24d46"></i>Optimized Route</span>
-  <span><i class="dot" style="background:#2879d8"></i>Shortest Route</span>
- </div>
-</div>
+    <div class="grid">
+      <div>
+        <h3>Variables</h3>
+        <ul>
+          <li><b>x:</b> Horizontal coordinate.</li>
+          <li><b>y:</b> Vertical coordinate on the map.</li>
+          <li><b>z:</b> Terrain elevation.</li>
+          <li><b>f(x,y):</b> Height at a particular location.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Model Assumptions</h3>
+        <ul>
+          <li>Terrain is continuous and differentiable.</li>
+          <li>Elevation is represented by a simulated equation.</li>
+          <li>Route movement is represented by a grid.</li>
+          <li>Slope is used as a simplified measure of route difficulty.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="small">
+      Important: This is a simulated mathematical terrain, not real-world
+      GIS or satellite elevation data.
+    </p>
+  </div>
+</section>
 
-<div class="panel">
- <h3>Slope Heatmap</h3>
- <p class="sub">Color represents terrain steepness</p>
- <canvas id="heatmap"></canvas>
- <div class="legend">
-  <span>🟢 Gentle</span>
-  <span>🟡 Moderate</span>
-  <span>🔴 Steep</span>
- </div>
-</div>
+<!-- CALCULUS -->
+<section class="section" id="calculus">
+  <div class="section-head">
+    <h2>03. Calculus Concepts Used</h2>
+    <p>
+      The project connects calculus concepts with the mathematical
+      calculations performed in Python.
+    </p>
+  </div>
 
-</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Partial Derivatives</h3>
+      <p>They measure how elevation changes when one coordinate changes
+      while the other remains fixed.</p>
+      <div class="formula">∂f/∂x and ∂f/∂y</div>
+      <p><b>Python:</b> <code>sp.diff(f, x)</code> and <code>sp.diff(f, y)</code></p>
+    </div>
 
-<h2 class="section-title">Route Optimization Controls</h2>
+    <div class="card">
+      <h3>Gradient</h3>
+      <p>The gradient combines both partial derivatives and indicates
+      the direction of the steepest increase.</p>
+      <div class="formula">∇f = (f<sub>x</sub>, f<sub>y</sub>)</div>
+      <p><b>Python:</b> Calculate both derivatives and evaluate them at a point.</p>
+    </div>
 
-<div class="controls">
+    <div class="card">
+      <h3>Slope Magnitude</h3>
+      <p>The magnitude of the gradient measures how quickly elevation
+      changes across the terrain.</p>
+      <div class="formula">|∇f| = √(f<sub>x</sub>² + f<sub>y</sub>²)</div>
+      <p><b>Python:</b> <code>np.sqrt(fx**2 + fy**2)</code></p>
+    </div>
 
-<div class="panel">
- <h3>Optimization Settings</h3>
- <p class="sub">Adjust the importance of slope in route selection.</p>
+    <div class="card">
+      <h3>Slope Angle</h3>
+      <p>Converts the gradient magnitude into an angle in degrees.</p>
+      <div class="formula">θ = tan⁻¹(|∇f|)</div>
+      <p><b>Python:</b> <code>np.degrees(np.arctan(slope))</code></p>
+    </div>
 
- <div class="control-group">
-  <label>Slope Penalty: <span id="weightValue">1.5</span></label>
-  <input id="weight" type="range" min="0" max="8" step="0.1" value="1.5">
- </div>
+    <div class="card">
+      <h3>Taylor Series and Linearization</h3>
+      <p>Approximates the terrain height near a known point using
+      a local linear model.</p>
+      <div class="formula">
+        f(x,y) ≈ f(a,b) + f<sub>x</sub>(a,b)(x-a)
+        + f<sub>y</sub>(a,b)(y-b)
+      </div>
+      <p><b>Application:</b> Estimate small elevation changes near a point.</p>
+    </div>
 
- <div class="buttons">
-  <button onclick="updateRoutes()">Optimize Route</button>
-  <button class="secondary" onclick="resetSettings()">Reset</button>
- </div>
+    <div class="card">
+      <h3>Optimization</h3>
+      <p>Compares possible routes using distance and slope-related cost.</p>
+      <div class="formula">
+        Route Cost = Σ [distance × (1 + λ × slope)]
+      </div>
+      <p><b>Python:</b> Dijkstra's algorithm searches for a minimum-cost path.</p>
+    </div>
+  </div>
 
- <div id="routeInfo" class="result" style="margin-top:16px">
-  Select Optimize Route to calculate the paths.
- </div>
-</div>
+  <div class="card" style="margin-top:18px">
+    <h3>Concepts not implemented in this model</h3>
+    <p>
+      Backpropagation is mainly used to train neural networks. Since this
+      project uses a mathematical terrain function and graph-based route
+      optimisation rather than a neural network, backpropagation is not
+      required in the current implementation.
+    </p>
+    <p>
+      Gradient descent is another optimisation method, but the current
+      route search uses Dijkstra's algorithm. Do not claim that gradient
+      descent or backpropagation is implemented in this project.
+    </p>
+  </div>
+</section>
 
-<div class="panel">
- <h3>Mathematical Point Analysis</h3>
- <p class="sub">Enter coordinates to calculate terrain properties.</p>
+<!-- 3D TERRAIN -->
+<section class="section" id="terrain">
+  <div class="section-head">
+    <h2>04. Interactive 3D Terrain</h2>
+    <p>
+      Rotate, zoom and explore the simulated terrain. The surface colour
+      represents the local slope angle.
+    </p>
+  </div>
 
- <div class="control-group">
-  <label>X coordinate (-8 to 8)</label>
-  <input type="number" id="pointX" value="2" min="-8" max="8" step="0.1">
- </div>
+  <div class="card">
+    <div id="terrain3d"></div>
+    <div class="legend">
+      <span><i class="dot green"></i>Gentle slope</span>
+      <span><i class="dot yellow"></i>Moderate slope</span>
+      <span><i class="dot red"></i>Steep slope</span>
+    </div>
+    <p class="small">Drag to rotate. Scroll to zoom.</p>
+  </div>
+</section>
 
- <div class="control-group">
-  <label>Y coordinate (-8 to 8)</label>
-  <input type="number" id="pointY" value="3" min="-8" max="8" step="0.1">
- </div>
+<!-- HEATMAP -->
+<section class="section">
+  <div class="section-head">
+    <h2>05. Slope Heatmap</h2>
+    <p>
+      The heatmap displays how slope changes across the terrain.
+      Green indicates gentler areas and red indicates steeper areas.
+    </p>
+  </div>
 
- <button onclick="analyzePoint()">Calculate Mathematics</button>
+  <div class="card">
+    <canvas id="heatmap" width="600" height="450"></canvas>
+    <div class="legend">
+      <span><i class="dot green"></i>0°–15°</span>
+      <span><i class="dot yellow"></i>15°–30°</span>
+      <span><i class="dot red"></i>Above 30°</span>
+    </div>
+  </div>
+</section>
 
- <div id="pointResult">
-  Enter a point to calculate its elevation, derivatives and slope.
- </div>
-</div>
+<!-- ANALYSIS -->
+<section class="section" id="analysis">
+  <div class="section-head">
+    <h2>06. Point-wise Mathematical Analysis</h2>
+    <p>
+      Enter a coordinate to calculate elevation, partial derivatives,
+      gradient magnitude and slope angle at that location.
+    </p>
+  </div>
 
-</div>
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label for="pointX">X coordinate</label>
+        <input id="pointX" type="number" value="2" step="0.1">
+      </div>
+      <div>
+        <label for="pointY">Y coordinate</label>
+        <input id="pointY" type="number" value="1" step="0.1">
+      </div>
+    </div>
+    <button onclick="analyzePoint()">Calculate Terrain Properties</button>
+    <div id="analysisResult" class="result">
+      Enter coordinates and click calculate.
+    </div>
+  </div>
+</section>
 
-<h2 class="section-title">Mathematical Analysis</h2>
+<!-- ROUTE -->
+<section class="section" id="route">
+  <div class="section-head">
+    <h2>07. Route Optimization</h2>
+    <p>
+      The application compares a shortest-distance route with a route
+      that also considers terrain slope.
+    </p>
+  </div>
 
-<div class="math-grid">
+  <div class="card">
+    <h3>Route Comparison</h3>
+    <p>
+      The route cost includes horizontal/vertical movement distance,
+      elevation difference and average local gradient.
+    </p>
 
-<div class="math-card">
- <small>1. Terrain Function</small>
- <div class="formula">z = f(x,y)</div>
- <div class="result">Represents the elevation of the land using two coordinates.</div>
-</div>
+    <div class="formula">
+      Cost of an edge = 3D distance × (1 + λ × average gradient)
+    </div>
 
-<div class="math-card">
- <small>2. Partial Derivative</small>
- <div class="formula">∂z / ∂x, ∂z / ∂y</div>
- <div class="result">Measures the change in elevation along each coordinate direction.</div>
-</div>
+    <label for="weight">Slope penalty (λ)</label>
+    <input type="range" id="weight" min="0" max="10" step="0.5" value="4">
+    <p>Current slope penalty: <b id="weightValue">4</b></p>
 
-<div class="math-card">
- <small>3. Gradient</small>
- <div class="formula">∇f = (fx, fy)</div>
- <div class="result">Indicates the direction of maximum elevation increase.</div>
-</div>
+    <button onclick="updateRoutes()">Calculate Routes</button>
+    <button class="secondary" onclick="resetRoutes()">Reset View</button>
 
-<div class="math-card">
- <small>4. Gradient Magnitude</small>
- <div class="formula">|∇f| = √(fx² + fy²)</div>
- <div class="result">Measures the maximum rate of terrain height change.</div>
-</div>
+    <div id="routeResult" class="result">
+      Calculate routes to see the comparison.
+    </div>
 
-<div class="math-card">
- <small>5. Slope Angle</small>
- <div class="formula">θ = tan⁻¹(|∇f|)</div>
- <div class="result">Converts gradient magnitude into an angle in degrees.</div>
-</div>
+    <div class="legend">
+      <span><i class="dot green"></i>Shortest-distance route</span>
+      <span><i class="dot red"></i>Slope-aware route</span>
+    </div>
+  </div>
+</section>
 
-<div class="math-card">
- <small>6. Hessian Matrix</small>
- <div class="formula">H = [fxx fxy; fyx fyy]</div>
- <div class="result">Contains second-order derivatives for curvature analysis.</div>
-</div>
+<!-- PSEUDOCODE -->
+<section class="section" id="algorithm">
+  <div class="section-head">
+    <h2>08. Pseudocode and Algorithm</h2>
+    <p>General steps followed by the route optimisation process.</p>
+  </div>
 
-</div>
+  <div class="card">
+    <h3>Pseudocode</h3>
+    <pre>
+START
 
-<h2 class="section-title">Project Methodology</h2>
+Define terrain function f(x, y)
 
-<div class="panel">
- <div class="result">
-  <b>01. Terrain modelling:</b> Create a two-variable mathematical elevation function.<br><br>
-  <b>02. Derivative calculation:</b> Calculate partial derivatives and gradients.<br><br>
-  <b>03. Slope analysis:</b> Measure terrain steepness and visualize it using a heatmap.<br><br>
-  <b>04. Graph construction:</b> Represent terrain locations as connected nodes.<br><br>
-  <b>05. Route optimization:</b> Apply Dijkstra's algorithm to find a minimum-cost route.<br><br>
-  <b>06. Visualization:</b> Display the terrain and compare the selected routes.
- </div>
-</div>
+Calculate partial derivatives:
+    fx = ∂f/∂x
+    fy = ∂f/∂y
+
+Create a grid of terrain coordinates
+
+For every grid point:
+    Calculate elevation
+    Calculate gradient magnitude
+    Calculate slope angle
+
+Set starting point and destination
+
+Run Dijkstra with distance-based edge cost
+Store shortest-distance route
+
+Run Dijkstra with slope-aware edge cost
+Store optimised route
+
+Display:
+    3D terrain
+    Slope heatmap
+    Route comparison
+    Calculated results
+
+END
+    </pre>
+
+    <h3>Algorithm Explanation</h3>
+    <ol>
+      <li>Generate terrain coordinates.</li>
+      <li>Calculate elevation at every grid point.</li>
+      <li>Calculate partial derivatives and local slope.</li>
+      <li>Represent neighbouring grid points as connected nodes.</li>
+      <li>Assign a cost to each movement.</li>
+      <li>Use Dijkstra's algorithm to find a minimum-cost route.</li>
+      <li>Compare the two routes and display the result.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- PYTHON -->
+<section class="section">
+  <div class="section-head">
+    <h2>09. Python Implementation</h2>
+    <p>
+      The following is a Python reference implementation of the mathematical
+      model and terrain analysis. It uses SymPy, NumPy, Pandas and Matplotlib.
+    </p>
+  </div>
+
+  <div class="card">
+    <h3>Python Code</h3>
+    <pre><code>import sympy as sp
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Define symbolic variables
+x, y = sp.symbols('x y')
+
+# Define terrain function
+f = (
+    0.08 * (x**2 + y**2)
+    + 4 * sp.exp(-((x-2)**2 + (y-1)**2)/5)
+)
+
+# Calculate partial derivatives using SymPy
+fx = sp.diff(f, x)
+fy = sp.diff(f, y)
+
+print("Terrain function:", f)
+print("Partial derivative fx:", fx)
+print("Partial derivative fy:", fy)
+
+# Convert symbolic functions into numerical functions
+height = sp.lambdify((x, y), f, 'numpy')
+dx = sp.lambdify((x, y), fx, 'numpy')
+dy = sp.lambdify((x, y), fy, 'numpy')
+
+# Create coordinate grid
+X = np.linspace(-10, 10, 60)
+Y = np.linspace(-10, 10, 60)
+X, Y = np.meshgrid(X, Y)
+
+# Calculate elevation
+Z = height(X, Y)
+
+# Calculate gradient
+FX = dx(X, Y)
+FY = dy(X, Y)
+
+# Calculate slope magnitude and angle
+slope = np.sqrt(FX**2 + FY**2)
+angle = np.degrees(np.arctan(slope))
+
+# Store sample results using Pandas
+results = pd.DataFrame({
+    'X': X.ravel(),
+    'Y': Y.ravel(),
+    'Elevation': Z.ravel(),
+    'Slope': slope.ravel(),
+    'Slope Angle': angle.ravel()
+})
+
+print(results.head())
+
+# Plot 3D terrain
+fig = plt.figure(figsize=(10, 7))
+ax = fig.add_subplot(111, projection='3d')
+ax.plot_surface(X, Y, Z, cmap='terrain')
+ax.set_title('Simulated Terrain Model')
+ax.set_xlabel('X coordinate')
+ax.set_ylabel('Y coordinate')
+ax.set_zlabel('Elevation')
+plt.show()
+
+# Plot slope heatmap
+plt.figure(figsize=(8, 6))
+plt.contourf(X, Y, angle, levels=20, cmap='RdYlGn_r')
+plt.colorbar(label='Slope angle (degrees)')
+plt.title('Terrain Slope Heatmap')
+plt.xlabel('X coordinate')
+plt.ylabel('Y coordinate')
+plt.show()</code></pre>
+    <p class="small">
+      This Python code performs mathematical terrain analysis and
+      visualisation. The interactive website separately performs its
+      calculations in JavaScript; it does not execute this Python code
+      or connect to a Python backend.
+    </p>
+  </div>
+</section>
+
+<!-- TESTING -->
+<section class="section" id="testing">
+  <div class="section-head">
+    <h2>10. Testing and Validation</h2>
+    <p>
+      Use this table to record actual tests performed before the final
+      evaluation. Do not mark a test as passed until it has been verified.
+    </p>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>Test</th><th>Expected result</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Terrain function</td><td>Elevation values are calculated</td><td><span class="status">To verify</span></td></tr>
+        <tr><td>Partial derivatives</td><td>Both derivatives are calculated</td><td><span class="status">To verify</span></td></tr>
+        <tr><td>Slope calculation</td><td>Non-negative slope magnitude</td><td><span class="status">To verify</span></td></tr>
+        <tr><td>Heatmap</td><td>Different slope regions are displayed</td><td><span class="status">To verify</span></td></tr>
+        <tr><td>Route search</td><td>A connected path is found</td><td><span class="status">To verify</span></td></tr>
+        <tr><td>Mobile layout</td><td>Sections fit smaller screens</td><td><span class="status">To verify</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- OBJECTIVE EVIDENCE -->
+<section class="section">
+  <div class="section-head">
+    <h2>11. Objective-wise Progress and Evidence</h2>
+    <p>Update the status and attach actual evidence for every objective.</p>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>Objective</th><th>Work performed / evidence</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mathematical terrain model</td>
+          <td>Terrain equation and variable definitions</td>
+          <td><span class="status">Update status</span></td>
+        </tr>
+        <tr>
+          <td>Calculus analysis</td>
+          <td>Partial derivatives and gradient calculations</td>
+          <td><span class="status">Update status</span></td>
+        </tr>
+        <tr>
+          <td>Terrain visualisation</td>
+          <td>3D surface and slope heatmap</td>
+          <td><span class="status">Update status</span></td>
+        </tr>
+        <tr>
+          <td>Route optimisation</td>
+          <td>Comparison of two route costs</td>
+          <td><span class="status">Update status</span></td>
+        </tr>
+        <tr>
+          <td>Testing</td>
+          <td>Test cases and observed outputs</td>
+          <td><span class="status">Update status</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CHALLENGES -->
+<section class="section">
+  <div class="section-head">
+    <h2>12. Challenges, Limitations and Future Scope</h2>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Challenges</h3>
+      <ul>
+        <li>Understanding partial derivatives and gradients.</li>
+        <li>Converting mathematical expressions into code.</li>
+        <li>Representing terrain as a grid.</li>
+        <li>Comparing distance and slope-based route costs.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Current Limitations</h3>
+      <ul>
+        <li>Terrain is simulated, not based on measured elevation.</li>
+        <li>Route search uses a finite grid.</li>
+        <li>Only slope and distance are considered in route cost.</li>
+        <li>Obstacles and real-world travel conditions are not included.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Future Scope</h3>
+      <ul>
+        <li>Use real elevation data from GIS or digital elevation models.</li>
+        <li>Add obstacles and restricted areas.</li>
+        <li>Include travel time and energy consumption.</li>
+        <li>Explore A* route search and more advanced optimisation.</li>
+        <li>Connect the model to real terrain mapping systems.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Real-world Applications</h3>
+      <ul>
+        <li>Hiking and trekking route planning.</li>
+        <li>Road and infrastructure planning.</li>
+        <li>Agricultural vehicle movement.</li>
+        <li>Terrain navigation and robotics.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="section" id="team">
+  <div class="section-head">
+    <h2>13. Team Details and Responsibilities</h2>
+    <p>Add every team member's real name, photo and assigned role.</p>
+  </div>
+
+  <div class="card">
+    <div class="placeholder">
+      <b>Team Name:</b> Add your official team name here.
+      <br><b>Project Title:</b> Terrain Analysis and Route Optimization using Calculus and Python.
+    </div>
+
+    <div class="grid-3">
+      <div class="placeholder">
+        <b>Team Member 1</b>
+        <p>[Insert member photo]</p>
+        <p>Name: [Enter name]</p>
+        <p>Role: [Enter assigned role]</p>
+      </div>
+      <div class="placeholder">
+        <b>Team Member 2</b>
+        <p>[Insert member photo]</p>
+        <p>Name: [Enter name]</p>
+        <p>Role: [Enter assigned role]</p>
+      </div>
+      <div class="placeholder">
+        <b>Team Member 3</b>
+        <p>[Insert member photo]</p>
+        <p>Name: [Enter name]</p>
+        <p>Role: [Enter assigned role]</p>
+      </div>
+    </div>
+    <p class="small">Duplicate or remove member cards to match your actual team.</p>
+  </div>
+</section>
+
+<!-- DOCUMENTATION -->
+<section class="section">
+  <div class="section-head">
+    <h2>14. Project Documentation and Evidence</h2>
+    <p>Use this section to organise the documentation required for evaluation.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>ClickUp Task Tracking</h3>
+      <p>Each task should have a named member, status and due date.</p>
+      <div class="placeholder">[Add ClickUp project link or task evidence]</div>
+    </div>
+    <div class="card">
+      <h3>Meeting Minutes (MoM)</h3>
+      <p>Record date, attendees, agenda, decisions and action items for each meeting.</p>
+      <div class="placeholder">[Add Google Drive MoM link]</div>
+    </div>
+    <div class="card">
+      <h3>Geotagged Project Photos</h3>
+      <p>Upload real project activity photographs with location and timestamp visible.</p>
+      <div class="placeholder">[Add actual geotagged photos]</div>
+    </div>
+    <div class="card">
+      <h3>Attendance Summary</h3>
+      <p>Maintain attendance for team meetings and mentor sessions.</p>
+      <div class="placeholder">[Add verified attendance sheet link]</div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCES -->
+<section class="section">
+  <div class="section-head">
+    <h2>15. References</h2>
+    <p>Use the actual sources consulted by your team and cite them in your report.</p>
+  </div>
+
+  <div class="card">
+    <ul>
+      <li><a href="https://docs.sympy.org/" target="_blank">SymPy Documentation</a> – symbolic mathematics and differentiation.</li>
+      <li><a href="https://numpy.org/doc/" target="_blank">NumPy Documentation</a> – numerical calculations and arrays.</li>
+      <li><a href="https://pandas.pydata.org/docs/" target="_blank">Pandas Documentation</a> – data organisation and analysis.</li>
+      <li><a href="https://matplotlib.org/stable/" target="_blank">Matplotlib Documentation</a> – graphs and visualisation.</li>
+      <li><a href="https://threejs.org/docs/" target="_blank">Three.js Documentation</a> – interactive 3D browser visualisation.</li>
+    </ul>
+  </div>
+</section>
 
 </main>
 
 <footer>
- TERRAIN EXPLORER · Mathematical Modelling and Route Optimization
- <br><br>
- Educational demonstration using simulated terrain data.
+  <h2 style="color:white">CalSymPy | Terrain Explorer</h2>
+  <p>Connecting Calculus, Python and real-world problem solving.</p>
+  <p>Final Evaluation Project</p>
 </footer>
 
-
 <script>
-
-// ======================================
-// 1. TERRAIN MATHEMATICAL FUNCTION
-// ======================================
-
-const N = 45;
-const MIN = -8;
-const MAX = 8;
-const STEP = (MAX-MIN)/(N-1);
-
-const weightInput = document.getElementById("weight");
+/* ---------------------------------
+   TERRAIN MATHEMATICAL MODEL
+---------------------------------- */
 
 function terrain(x,y){
- const q = (x-2)**2 + (y-1)**2;
- return 0.08*(x*x+y*y)+4*Math.exp(-q/5);
+  const e=Math.exp(-((x-2)**2+(y-1)**2)/5);
+  return 0.08*(x*x+y*y)+4*e;
 }
 
-// Analytical partial derivatives
-function fx(x,y){
- const q=(x-2)**2+(y-1)**2;
- return 0.16*x-(8/5)*(x-2)*Math.exp(-q/5);
+function derivativeX(x,y){
+  const e=Math.exp(-((x-2)**2+(y-1)**2)/5);
+  return 0.16*x-(8/5)*(x-2)*e;
 }
 
-function fy(x,y){
- const q=(x-2)**2+(y-1)**2;
- return 0.16*y-(8/5)*(y-1)*Math.exp(-q/5);
+function derivativeY(x,y){
+  const e=Math.exp(-((x-2)**2+(y-1)**2)/5);
+  return 0.16*y-(8/5)*(y-1)*e;
 }
 
 function gradient(x,y){
- return Math.hypot(fx(x,y),fy(x,y));
+  const gx=derivativeX(x,y);
+  const gy=derivativeY(x,y);
+  return Math.sqrt(gx*gx+gy*gy);
 }
 
 function slopeAngle(x,y){
- return Math.atan(gradient(x,y))*180/Math.PI;
+  return Math.atan(gradient(x,y))*180/Math.PI;
 }
 
-// ======================================
-// 2. CREATE TERRAIN GRID
-// ======================================
-
-const heights=[];
-const slopes=[];
-
-for(let i=0;i<N;i++){
- heights[i]=[];
- slopes[i]=[];
-
- for(let j=0;j<N;j++){
-  const x=MIN+j*STEP;
-  const y=MIN+i*STEP;
-
-  heights[i][j]=terrain(x,y);
-  slopes[i][j]=slopeAngle(x,y);
- }
-}
-
-
-// ======================================
-// 3. DIJKSTRA ROUTE ALGORITHM
-// ======================================
-
-const moves=[
- [-1,0],[1,0],[0,-1],[0,1],
- [-1,-1],[-1,1],[1,-1],[1,1]
-];
-
-function dijkstra(slopeWeight){
-
- const start=[0,0];
- const goal=[N-1,N-1];
-
- const dist=Array.from(
-  {length:N},
-  ()=>Array(N).fill(Infinity)
- );
-
- const prev=Array.from(
-  {length:N},
-  ()=>Array(N).fill(null)
- );
-
- dist[0][0]=0;
-
- const queue=[{cost:0,i:0,j:0}];
-
- while(queue.length){
-
-  queue.sort((a,b)=>a.cost-b.cost);
-
-  const current=queue.shift();
-  const {cost,i,j}=current;
-
-  if(cost!==dist[i][j]) continue;
-
-  if(i===goal[0] && j===goal[1]) break;
-
-  for(const [di,dj] of moves){
-
-   const ni=i+di;
-   const nj=j+dj;
-
-   if(ni<0||nj<0||ni>=N||nj>=N) continue;
-
-   const dx=dj*STEP;
-   const dy=di*STEP;
-
-   const horizontal=Math.hypot(dx,dy);
-
-   const dz=heights[ni][nj]-heights[i][j];
-
-   const distance3D=Math.hypot(horizontal,dz);
-
-   const averageSlope=(
-    gradient(MIN+j*STEP,MIN+i*STEP)+
-    gradient(MIN+nj*STEP,MIN+ni*STEP)
-   )/2;
-
-   const edgeCost=distance3D*(
-    1+slopeWeight*averageSlope
-   );
-
-   const newCost=cost+edgeCost;
-
-   if(newCost<dist[ni][nj]){
-
-    dist[ni][nj]=newCost;
-    prev[ni][nj]=[i,j];
-
-    queue.push({
-     cost:newCost,
-     i:ni,
-     j:nj
-    });
-   }
-  }
- }
-
- const path=[];
- let i=N-1,j=N-1;
-
- if(!isFinite(dist[i][j])) return [];
-
- while(i!==0||j!==0){
-  path.push([i,j]);
-
-  if(!prev[i][j]) return [];
-
-  [i,j]=prev[i][j];
- }
-
- path.push([0,0]);
- return path.reverse();
-}
-
-
-// ======================================
-// 4. ROUTE METRICS
-// ======================================
-
-function routeMetrics(path){
-
- let distance=0;
- let totalSlope=0;
-
- for(let k=1;k<path.length;k++){
-
-  const [i1,j1]=path[k-1];
-  const [i2,j2]=path[k];
-
-  const dx=(j2-j1)*STEP;
-  const dy=(i2-i1)*STEP;
-
-  const dz=heights[i2][j2]-heights[i1][j1];
-
-  distance+=Math.hypot(dx,dy,dz);
-
-  totalSlope+=(
-   gradient(MIN+j1*STEP,MIN+i1*STEP)+
-   gradient(MIN+j2*STEP,MIN+i2*STEP)
-  )/2;
- }
-
- return {
-  distance,
-  averageSlope:totalSlope/Math.max(1,path.length-1)
- };
-}
-
-
-// ======================================
-// 5. HEATMAP DRAWING
-// ======================================
-
-const heatCanvas=document.getElementById("heatmap");
-const ctx=heatCanvas.getContext("2d");
-
-function drawHeatmap(){
-
- const w=heatCanvas.clientWidth;
- const h=heatCanvas.clientHeight;
-
- heatCanvas.width=w*devicePixelRatio;
- heatCanvas.height=h*devicePixelRatio;
-
- ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
-
- const cellW=w/N;
- const cellH=h/N;
-
- for(let i=0;i<N;i++){
-  for(let j=0;j<N;j++){
-
-   const s=slopes[i][j];
-
-   let color;
-
-   if(s<15) color="#5da878";
-   else if(s<30) color="#e6c75a";
-   else color="#d9695e";
-
-   ctx.fillStyle=color;
-   ctx.fillRect(j*cellW,i*cellH,cellW+1,cellH+1);
-  }
- }
-
- // Draw both routes
- drawPathOnCanvas(shortestPath,"#2879d8",w,h);
- drawPathOnCanvas(optimizedPath,"#ffffff",w,h);
-
- // Start and destination
- ctx.fillStyle="#163d2d";
- ctx.beginPath();
- ctx.arc(cellW/2,cellH/2,6,0,Math.PI*2);
- ctx.fill();
-
- ctx.fillStyle="#163d2d";
- ctx.beginPath();
- ctx.arc(w-cellW/2,h-cellH/2,6,0,Math.PI*2);
- ctx.fill();
-}
-
-function drawPathOnCanvas(path,color,w,h){
-
- if(!path.length) return;
-
- ctx.beginPath();
-
- path.forEach(([i,j],k)=>{
-  const px=(j+0.5)*w/N;
-  const py=(i+0.5)*h/N;
-
-  if(k===0) ctx.moveTo(px,py);
-  else ctx.lineTo(px,py);
- });
-
- ctx.strokeStyle=color;
- ctx.lineWidth=2.5;
- ctx.stroke();
-}
-
-
-// ======================================
-// 6. THREE.JS 3D TERRAIN
-// ======================================
-
-let scene,camera,renderer,controls;
-let terrainMesh;
-let shortestLine,optimizedLine;
-let shortestPath=[],optimizedPath=[];
-
-function initialize3D(){
-
- const container=document.getElementById("terrain");
-
- scene=new THREE.Scene();
- scene.background=new THREE.Color("#edf5ef");
-
- camera=new THREE.PerspectiveCamera(
-  45,
-  container.clientWidth/container.clientHeight,
-  0.1,1000
- );
-
- camera.position.set(22,20,25);
-
- renderer=new THREE.WebGLRenderer({antialias:true});
- renderer.setPixelRatio(Math.min(devicePixelRatio,2));
- renderer.setSize(container.clientWidth,container.clientHeight);
-
- container.appendChild(renderer.domElement);
-
- if(THREE.OrbitControls){
-  controls=new THREE.OrbitControls(camera,renderer.domElement);
-  controls.enableDamping=true;
- }
-
- scene.add(new THREE.AmbientLight(0xffffff,1.5));
-
- const light=new THREE.DirectionalLight(0xffffff,2);
- light.position.set(10,20,10);
- scene.add(light);
-
- createTerrainMesh();
-
- function animate(){
-  requestAnimationFrame(animate);
-  if(controls) controls.update();
-  renderer.render(scene,camera);
- }
-
- animate();
-
- window.addEventListener("resize",()=>{
-  camera.aspect=container.clientWidth/container.clientHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(container.clientWidth,container.clientHeight);
- });
-}
-
-
-// ======================================
-// 7. TERRAIN MESH AND SLOPE COLORS
-// ======================================
-
-function createTerrainMesh(){
-
- if(terrainMesh){
-  scene.remove(terrainMesh);
-  terrainMesh.geometry.dispose();
-  terrainMesh.material.dispose();
- }
-
- const geometry=new THREE.PlaneGeometry(
-  16,16,N-1,N-1
- );
-
- geometry.rotateX(-Math.PI/2);
-
- const positions=geometry.attributes.position;
- const colors=[];
-
- for(let i=0;i<N;i++){
-  for(let j=0;j<N;j++){
-
-   const index=i*N+j;
-   const x=MIN+j*STEP;
-   const y=MIN+i*STEP;
-
-   positions.setY(index,heights[i][j]);
-
-   const s=slopes[i][j];
-
-   let color;
-
-   if(s<15) color=new THREE.Color("#5da878");
-   else if(s<30) color=new THREE.Color("#e6c75a");
-   else color=new THREE.Color("#d9695e");
-
-   colors.push(color.r,color.g,color.b);
-  }
- }
-
- geometry.setAttribute(
-  "color",
-  new THREE.Float32BufferAttribute(colors,3)
- );
-
- geometry.computeVertexNormals();
-
- const material=new THREE.MeshStandardMaterial({
-  vertexColors:true,
-  side:THREE.DoubleSide,
-  roughness:0.85
- });
-
- terrainMesh=new THREE.Mesh(geometry,material);
- scene.add(terrainMesh);
-}
-
-
-// ======================================
-// 8. DRAW ROUTE ON 3D TERRAIN
-// ======================================
-
-function draw3DPath(path,color){
-
- if(!path.length) return null;
-
- const points=path.map(([i,j])=>{
-  return new THREE.Vector3(
-   -8+j*STEP,
-   heights[i][j]+0.08,
-   -8+i*STEP
-  );
- });
-
- const curve=new THREE.CatmullRomCurve3(points);
-
- const geometry=new THREE.TubeGeometry(
-  curve,
-  Math.max(50,points.length*2),
-  0.045,
-  6,
-  false
- );
-
- const material=new THREE.MeshBasicMaterial({color});
-
- const line=new THREE.Mesh(geometry,material);
-
- scene.add(line);
-
- return line;
-}
-
-
-// ======================================
-// 9. UPDATE ROUTES
-// ======================================
-
-function updateRoutes(){
-
- const weight=Number(weightInput.value);
-
- shortestPath=dijkstra(0);
- optimizedPath=dijkstra(weight);
-
- const shortest=routeMetrics(shortestPath);
- const optimized=routeMetrics(optimizedPath);
-
- if(shortestLine) scene.remove(shortestLine);
- if(optimizedLine) scene.remove(optimizedLine);
-
- if(shortestLine){
-  shortestLine.geometry.dispose();
-  shortestLine.material.dispose();
- }
-
- if(optimizedLine){
-  optimizedLine.geometry.dispose();
-  optimizedLine.material.dispose();
- }
-
- shortestLine=draw3DPath(shortestPath,"#2879d8");
- optimizedLine=draw3DPath(optimizedPath,"#e24d46");
-
- document.getElementById("distanceStat").textContent=
-  optimized.distance.toFixed(2)+" units";
-
- document.getElementById("slopeStat").textContent=
-  (optimized.averageSlope*100).toFixed(1)+"%";
-
- document.getElementById("routeInfo").innerHTML=
-  "<b>Shortest route:</b> "+shortest.distance.toFixed(2)+
-  " units<br><b>Slope-aware route:</b> "+
-  optimized.distance.toFixed(2)+
-  " units<br><b>Shortest route cost:</b> "+
-  shortestPath.length+
-  " points<br><b>Optimized route points:</b> "+
-  optimizedPath.length+
-  "<br><b>Slope penalty:</b> "+weight;
-
- drawHeatmap();
-}
-
-
-// ======================================
-// 10. POINT MATHEMATICAL ANALYSIS
-// ======================================
+/* ---------------------------------
+   POINT ANALYSIS
+---------------------------------- */
 
 function analyzePoint(){
+  const x=Number(document.getElementById("pointX").value);
+  const y=Number(document.getElementById("pointY").value);
 
- const px=Number(document.getElementById("pointX").value);
- const py=Number(document.getElementById("pointY").value);
+  if(!Number.isFinite(x)||!Number.isFinite(y)){
+    document.getElementById("analysisResult").innerHTML="Please enter valid coordinates.";
+    return;
+  }
 
- if(!Number.isFinite(px)||!Number.isFinite(py)||
- px<MIN||px>MAX||py<MIN||py>MAX){
+  const z=terrain(x,y);
+  const fx=derivativeX(x,y);
+  const fy=derivativeY(x,y);
+  const g=gradient(x,y);
+  const angle=slopeAngle(x,y);
 
-  alert("Enter coordinates between -8 and 8.");
-  return;
- }
+  // First-order Taylor approximation near the selected point
+  const dx=0.1,dy=0.1;
+  const approximate=z+fx*dx+fy*dy;
+  const actual=terrain(x+dx,y+dy);
 
- const height=terrain(px,py);
-
- const gx=fx(px,py);
- const gy=fy(px,py);
-
- const magnitude=Math.hypot(gx,gy);
-
- const angle=Math.atan(magnitude)*180/Math.PI;
-
- const percentage=magnitude*100;
-
- // Second derivatives using numerical differences
- const h=0.0001;
-
- const fxx=(fx(px+h,py)-fx(px-h,py))/(2*h);
- const fyy=(fy(px,py+h)-fy(px,py-h))/(2*h);
- const fxy=(fx(px,py+h)-fx(px,py-h))/(2*h);
-
- // Directional derivative in direction (1,1)
- const directional=(gx+gy)/Math.sqrt(2);
-
- document.getElementById("pointResult").innerHTML=`
- <b>Coordinates:</b> (${px}, ${py})<br>
- <b>Elevation:</b> ${height.toFixed(4)}<br>
- <b>Partial derivative fx:</b> ${gx.toFixed(4)}<br>
- <b>Partial derivative fy:</b> ${gy.toFixed(4)}<br>
- <b>Gradient magnitude:</b> ${magnitude.toFixed(4)}<br>
- <b>Maximum slope angle:</b> ${angle.toFixed(2)}°<br>
- <b>Maximum slope percentage:</b> ${percentage.toFixed(2)}%<br>
- <b>Directional derivative (1,1):</b> ${directional.toFixed(4)}<br>
- <b>fxx:</b> ${fxx.toFixed(4)}<br>
- <b>fyy:</b> ${fyy.toFixed(4)}<br>
- <b>fxy:</b> ${fxy.toFixed(4)}<br>
- <b>Hessian determinant:</b> ${(fxx*fyy-fxy*fxy).toFixed(4)}
- `;
+  document.getElementById("analysisResult").innerHTML=`
+    <h3>Calculated Results</h3>
+    <p>Coordinates: (${x.toFixed(2)}, ${y.toFixed(2)})</p>
+    <p>Elevation: <b>${z.toFixed(4)}</b></p>
+    <p>Partial derivative fx: <b>${fx.toFixed(4)}</b></p>
+    <p>Partial derivative fy: <b>${fy.toFixed(4)}</b></p>
+    <p>Gradient magnitude: <b>${g.toFixed(4)}</b></p>
+    <p>Slope angle: <b>${angle.toFixed(2)}°</b></p>
+    <hr>
+    <p>First-order Taylor estimate at nearby point: <b>${approximate.toFixed(4)}</b></p>
+    <p>Actual model elevation at nearby point: <b>${actual.toFixed(4)}</b></p>
+  `;
 }
 
+/* ---------------------------------
+   SLOPE HEATMAP
+---------------------------------- */
 
-// ======================================
-// 11. RESET AND START
-// ======================================
-
-function resetSettings(){
- weightInput.value=1.5;
- document.getElementById("weightValue").textContent="1.5";
- updateRoutes();
+function slopeColor(angle){
+  if(angle<15) return "#35a66b";
+  if(angle<30) return "#edc34b";
+  return "#df6258";
 }
 
-weightInput.addEventListener("input",()=>{
- document.getElementById("weightValue").textContent=
-  Number(weightInput.value).toFixed(1);
+function drawHeatmap(){
+  const canvas=document.getElementById("heatmap");
+  const ctx=canvas.getContext("2d");
+  const w=canvas.width,h=canvas.height;
+  const image=ctx.createImageData(w,h);
+
+  for(let py=0;py<h;py++){
+    for(let px=0;px<w;px++){
+      const x=-10+20*px/(w-1);
+      const y=10-20*py/(h-1);
+      const color=slopeColor(slopeAngle(x,y));
+      const rgb=color.match(/\w\w/g).map(v=>parseInt(v,16));
+      const i=(py*w+px)*4;
+      image.data[i]=rgb[0];
+      image.data[i+1]=rgb[1];
+      image.data[i+2]=rgb[2];
+      image.data[i+3]=255;
+    }
+  }
+  ctx.putImageData(image,0,0);
+}
+
+/* ---------------------------------
+   THREE.JS 3D TERRAIN
+---------------------------------- */
+
+let scene,camera,renderer,controls;
+let terrainMesh,routeLines=[];
+let shortestPath=[],optimizedPath=[];
+const GRID=40;
+const MIN=-10,MAX=10;
+
+function init3D(){
+  const container=document.getElementById("terrain3d");
+
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0xeaf3ed);
+
+  camera=new THREE.PerspectiveCamera(
+    45,container.clientWidth/container.clientHeight,0.1,1000
+  );
+  camera.position.set(24,23,28);
+
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(container.clientWidth,container.clientHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  container.appendChild(renderer.domElement);
+
+  controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;
+
+  scene.add(new THREE.AmbientLight(0xffffff,0.8));
+
+  const light=new THREE.DirectionalLight(0xffffff,0.8);
+  light.position.set(10,20,10);
+  scene.add(light);
+
+  createTerrain();
+  animate();
+
+  window.addEventListener("resize",()=>{
+    const width=container.clientWidth;
+    const height=container.clientHeight;
+    camera.aspect=width/height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width,height);
+  });
+}
+
+function createTerrain(){
+  const positions=[];
+  const colors=[];
+  const indices=[];
+  const color=new THREE.Color();
+
+  for(let j=0;j<=GRID;j++){
+    for(let i=0;i<=GRID;i++){
+      const x=MIN+(MAX-MIN)*i/GRID;
+      const y=MIN+(MAX-MIN)*j/GRID;
+      const z=terrain(x,y);
+
+      positions.push(x,z,y);
+
+      const angle=slopeAngle(x,y);
+      color.set(slopeColor(angle));
+      colors.push(color.r,color.g,color.b);
+    }
+  }
+
+  for(let j=0;j<GRID;j++){
+    for(let i=0;i<GRID;i++){
+      const a=j*(GRID+1)+i;
+      const b=a+1;
+      const c=a+(GRID+1);
+      const d=c+1;
+      indices.push(a,c,b,b,c,d);
+    }
+  }
+
+  const geometry=new THREE.BufferGeometry();
+  geometry.setAttribute("position",new THREE.Float32BufferAttribute(positions,3));
+  geometry.setAttribute("color",new THREE.Float32BufferAttribute(colors,3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+
+  const material=new THREE.MeshStandardMaterial({
+    vertexColors:true,
+    side:THREE.DoubleSide,
+    roughness:0.85
+  });
+
+  terrainMesh=new THREE.Mesh(geometry,material);
+  scene.add(terrainMesh);
+
+  const grid=new THREE.GridHelper(20,20,0x77917e,0xcbd8ce);
+  grid.position.y=-0.15;
+  scene.add(grid);
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+  controls.update();
+  renderer.render(scene,camera);
+}
+
+/* ---------------------------------
+   DIJKSTRA ROUTE SEARCH
+---------------------------------- */
+
+function nodeId(i,j){
+  return j*(GRID+1)+i;
+}
+
+function nodePosition(id){
+  const i=id%(GRID+1);
+  const j=Math.floor(id/(GRID+1));
+  const x=MIN+(MAX-MIN)*i/GRID;
+  const y=MIN+(MAX-MIN)*j/GRID;
+  return {i,j,x,y,z:terrain(x,y)};
+}
+
+function edgeCost(a,b,weight){
+  const p=nodePosition(a);
+  const q=nodePosition(b);
+
+  const horizontal=Math.hypot(q.x-p.x,q.y-p.y);
+  const vertical=q.z-p.z;
+  const distance=Math.sqrt(horizontal*horizontal+vertical*vertical);
+
+  const averageSlope=(gradient(p.x,p.y)+gradient(q.x,q.y))/2;
+  return distance*(1+weight*averageSlope);
+}
+
+function dijkstra(weight){
+  const total=(GRID+1)*(GRID+1);
+  const start=nodeId(0,0);
+  const goal=nodeId(GRID,GRID);
+
+  const dist=new Array(total).fill(Infinity);
+  const previous=new Array(total).fill(-1);
+  const visited=new Array(total).fill(false);
+
+  dist[start]=0;
+
+  // Simple priority queue for this demonstration
+  const queue=[[0,start]];
+
+  while(queue.length){
+    queue.sort((a,b)=>a[0]-b[0]);
+    const [currentCost,current]=queue.shift();
+
+    if(visited[current]) continue;
+    visited[current]=true;
+
+    if(current===goal) break;
+
+    const p=nodePosition(current);
+
+    for(let di=-1;di<=1;di++){
+      for(let dj=-1;dj<=1;dj++){
+        if(di===0&&dj===0) continue;
+
+        const ni=p.i+di;
+        const nj=p.j+dj;
+
+        if(ni<0||ni>GRID||nj<0||nj>GRID) continue;
+
+        const next=nodeId(ni,nj);
+        if(visited[next]) continue;
+
+        const newCost=currentCost+edgeCost(current,next,weight);
+
+        if(newCost<dist[next]){
+          dist[next]=newCost;
+          previous[next]=current;
+          queue.push([newCost,next]);
+        }
+      }
+    }
+  }
+
+  if(!Number.isFinite(dist[goal])) return null;
+
+  const path=[];
+  let current=goal;
+
+  while(current!==-1){
+    path.push(current);
+    if(current===start) break;
+    current=previous[current];
+  }
+
+  path.reverse();
+  return {path,cost:dist[goal]};
+}
+
+function pathDistance(path){
+  let total=0;
+  for(let k=1;k<path.length;k++){
+    const a=nodePosition(path[k-1]);
+    const b=nodePosition(path[k]);
+    total+=Math.hypot(b.x-a.x,b.y-a.y);
+  }
+  return total;
+}
+
+function averagePathSlope(path){
+  if(path.length<2)return 0;
+  let total=0;
+  for(const id of path){
+    const p=nodePosition(id);
+    total+=slopeAngle(p.x,p.y);
+  }
+  return total/path.length;
+}
+
+function clearRoutes(){
+  routeLines.forEach(line=>scene.remove(line));
+  routeLines=[];
+}
+
+function drawPath(path,colorHex){
+  if(!path||path.length<2)return;
+
+  const points=path.map(id=>{
+    const p=nodePosition(id);
+    return new THREE.Vector3(p.x,p.z+0.12,p.y);
+  });
+
+  const geometry=new THREE.BufferGeometry().setFromPoints(points);
+  const material=new THREE.LineBasicMaterial({
+    color:colorHex,
+    linewidth:3
+  });
+
+  const line=new THREE.Line(geometry,material);
+  scene.add(line);
+  routeLines.push(line);
+}
+
+function updateRoutes(){
+  const weight=Number(document.getElementById("weight").value);
+  document.getElementById("weightValue").textContent=weight;
+
+  const shortest=dijkstra(0);
+  const optimized=dijkstra(weight);
+
+  if(!shortest||!optimized){
+    document.getElementById("routeResult").textContent="No route found.";
+    return;
+  }
+
+  shortestPath=shortest.path;
+  optimizedPath=optimized.path;
+
+  clearRoutes();
+  drawPath(shortestPath,0x18865b);
+  drawPath(optimizedPath,0xd84c43);
+
+  const d1=pathDistance(shortestPath);
+  const d2=pathDistance(optimizedPath);
+  const s1=averagePathSlope(shortestPath);
+  const s2=averagePathSlope(optimizedPath);
+
+  document.getElementById("routeResult").innerHTML=`
+    <h3>Route Comparison</h3>
+    <p>Shortest-distance route: <b>${d1.toFixed(2)} units</b></p>
+    <p>Its average slope angle: <b>${s1.toFixed(2)}°</b></p>
+    <hr>
+    <p>Slope-aware route distance: <b>${d2.toFixed(2)} units</b></p>
+    <p>Its average slope angle: <b>${s2.toFixed(2)}°</b></p>
+    <p>Shortest-route cost: <b>${shortest.cost.toFixed(2)}</b></p>
+    <p>Slope-aware route cost: <b>${optimized.cost.toFixed(2)}</b></p>
+    <p class="small">These are results from the simulated terrain and the selected slope penalty.</p>
+  `;
+}
+
+function resetRoutes(){
+  clearRoutes();
+  document.getElementById("routeResult").textContent="Routes cleared. Calculate routes to display them again.";
+}
+
+/* ---------------------------------
+   START APPLICATION
+---------------------------------- */
+
+document.getElementById("weight").addEventListener("input",function(){
+  document.getElementById("weightValue").textContent=this.value;
 });
 
-document.getElementById("gridStat").textContent=N+" × "+N;
-
-initialize3D();
-updateRoutes();
+drawHeatmap();
+init3D();
 analyzePoint();
-
+updateRoutes();
 </script>
 
 </body>
