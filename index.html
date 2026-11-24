@@ -1,0 +1,949 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terrain Explorer | Smart Route Optimization</title>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+ --bg:#f5f8f7;
+ --white:#ffffff;
+ --green:#18865e;
+ --dark:#183a31;
+ --muted:#75847e;
+ --border:#e4ebe7;
+ --light:#eaf5ef;
+}
+
+body{
+ font-family:Arial,sans-serif;
+ background:var(--bg);
+ color:var(--dark);
+}
+
+header{
+ background:white;
+ border-bottom:1px solid var(--border);
+ padding:17px 5%;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ position:sticky;
+ top:0;
+ z-index:10;
+}
+
+.logo{font-size:21px;font-weight:800;color:var(--green)}
+.logo span{color:#263f36}
+
+.status{
+ background:#e6f6ed;
+ color:#168451;
+ padding:7px 13px;
+ border-radius:20px;
+ font-size:12px;
+ font-weight:bold;
+}
+
+main{max-width:1450px;margin:auto;padding:30px 5%}
+
+.hero{
+ background:linear-gradient(120deg,#e9f5ee,#f7faf8);
+ padding:32px;
+ border-radius:17px;
+ margin-bottom:25px;
+ border:1px solid #dcebe1;
+}
+
+.hero h1{font-size:32px;margin-bottom:10px}
+.hero p{color:var(--muted);line-height:1.7}
+
+.stats{
+ display:grid;
+ grid-template-columns:repeat(4,1fr);
+ gap:15px;
+ margin-bottom:25px;
+}
+
+.stat,.panel{
+ background:white;
+ border:1px solid var(--border);
+ border-radius:13px;
+ padding:19px;
+}
+
+.stat small{color:var(--muted)}
+.stat h2{font-size:25px;margin-top:10px;color:var(--green)}
+
+.section-title{font-size:20px;margin:26px 0 14px}
+
+.visual-grid{
+ display:grid;
+ grid-template-columns:1.35fr 1fr;
+ gap:18px;
+}
+
+.panel h3{font-size:16px;margin-bottom:8px}
+.sub{font-size:12px;color:var(--muted);margin-bottom:15px}
+
+#terrain{
+ width:100%;
+ height:420px;
+ display:block;
+ background:#edf5ef;
+ border-radius:10px;
+}
+
+#heatmap{
+ width:100%;
+ height:420px;
+ display:block;
+ background:white;
+ border-radius:10px;
+}
+
+.controls{
+ display:grid;
+ grid-template-columns:1fr 1fr;
+ gap:18px;
+ margin-top:20px;
+}
+
+.control-group{margin-bottom:15px}
+.control-group label{
+ display:block;
+ font-size:13px;
+ font-weight:bold;
+ margin-bottom:10px;
+}
+
+input[type=range]{width:100%;accent-color:var(--green)}
+
+input[type=number]{
+ width:100%;
+ padding:10px;
+ border:1px solid var(--border);
+ border-radius:7px;
+}
+
+button{
+ border:none;
+ background:var(--green);
+ color:white;
+ padding:12px 17px;
+ border-radius:8px;
+ cursor:pointer;
+ font-weight:bold;
+}
+
+button:hover{background:#116c4a}
+
+.secondary{
+ background:#edf5ef;
+ color:var(--green);
+}
+
+.buttons{display:flex;gap:10px;flex-wrap:wrap}
+
+.math-grid{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:14px;
+}
+
+.math-card{
+ background:white;
+ border:1px solid var(--border);
+ padding:18px;
+ border-radius:12px;
+}
+
+.math-card small{color:var(--muted)}
+.formula{
+ font-size:17px;
+ font-weight:bold;
+ color:var(--green);
+ margin:13px 0;
+ overflow-wrap:anywhere;
+}
+
+.result{
+ font-size:14px;
+ line-height:1.7;
+ color:var(--muted);
+}
+
+#pointResult{
+ margin-top:12px;
+ background:#edf7f0;
+ border-radius:8px;
+ padding:13px;
+ font-size:13px;
+ line-height:1.8;
+}
+
+.legend{
+ display:flex;
+ flex-wrap:wrap;
+ gap:14px;
+ font-size:12px;
+ margin-top:13px;
+}
+
+.dot{
+ display:inline-block;
+ width:10px;
+ height:10px;
+ border-radius:50%;
+ margin-right:5px;
+}
+
+footer{
+ text-align:center;
+ padding:25px;
+ color:var(--muted);
+ font-size:12px;
+}
+
+@media(max-width:850px){
+ .visual-grid,.controls{grid-template-columns:1fr}
+ .stats{grid-template-columns:repeat(2,1fr)}
+ .math-grid{grid-template-columns:repeat(2,1fr)}
+ #terrain,#heatmap{height:340px}
+}
+
+@media(max-width:500px){
+ .math-grid{grid-template-columns:1fr}
+ .hero h1{font-size:25px}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="logo">⛰ TERRAIN <span>EXPLORER</span></div>
+ <div class="status">● MODEL ACTIVE</div>
+</header>
+
+<main>
+
+<section class="hero">
+ <h1>Explore. Analyse. Optimize.</h1>
+ <p>
+ An intelligent terrain modelling platform using partial derivatives,
+ gradient calculations and pathfinding algorithms to identify
+ suitable routes across uneven landscapes.
+ </p>
+</section>
+
+<section class="stats">
+ <div class="stat">
+  <small>Terrain Model</small>
+  <h2>3D Surface</h2>
+ </div>
+ <div class="stat">
+  <small>Grid Resolution</small>
+  <h2 id="gridStat">45 × 45</h2>
+ </div>
+ <div class="stat">
+  <small>Optimized Distance</small>
+  <h2 id="distanceStat">--</h2>
+ </div>
+ <div class="stat">
+  <small>Average Route Slope</small>
+  <h2 id="slopeStat">--</h2>
+ </div>
+</section>
+
+<h2 class="section-title">Terrain Visualization</h2>
+
+<div class="visual-grid">
+
+<div class="panel">
+ <h3>Interactive 3D Terrain</h3>
+ <p class="sub">Drag to rotate · Scroll to zoom · Right-click to pan</p>
+ <div id="terrain"></div>
+ <div class="legend">
+  <span><i class="dot" style="background:#18865e"></i>Terrain</span>
+  <span><i class="dot" style="background:#e24d46"></i>Optimized Route</span>
+  <span><i class="dot" style="background:#2879d8"></i>Shortest Route</span>
+ </div>
+</div>
+
+<div class="panel">
+ <h3>Slope Heatmap</h3>
+ <p class="sub">Color represents terrain steepness</p>
+ <canvas id="heatmap"></canvas>
+ <div class="legend">
+  <span>🟢 Gentle</span>
+  <span>🟡 Moderate</span>
+  <span>🔴 Steep</span>
+ </div>
+</div>
+
+</div>
+
+<h2 class="section-title">Route Optimization Controls</h2>
+
+<div class="controls">
+
+<div class="panel">
+ <h3>Optimization Settings</h3>
+ <p class="sub">Adjust the importance of slope in route selection.</p>
+
+ <div class="control-group">
+  <label>Slope Penalty: <span id="weightValue">1.5</span></label>
+  <input id="weight" type="range" min="0" max="8" step="0.1" value="1.5">
+ </div>
+
+ <div class="buttons">
+  <button onclick="updateRoutes()">Optimize Route</button>
+  <button class="secondary" onclick="resetSettings()">Reset</button>
+ </div>
+
+ <div id="routeInfo" class="result" style="margin-top:16px">
+  Select Optimize Route to calculate the paths.
+ </div>
+</div>
+
+<div class="panel">
+ <h3>Mathematical Point Analysis</h3>
+ <p class="sub">Enter coordinates to calculate terrain properties.</p>
+
+ <div class="control-group">
+  <label>X coordinate (-8 to 8)</label>
+  <input type="number" id="pointX" value="2" min="-8" max="8" step="0.1">
+ </div>
+
+ <div class="control-group">
+  <label>Y coordinate (-8 to 8)</label>
+  <input type="number" id="pointY" value="3" min="-8" max="8" step="0.1">
+ </div>
+
+ <button onclick="analyzePoint()">Calculate Mathematics</button>
+
+ <div id="pointResult">
+  Enter a point to calculate its elevation, derivatives and slope.
+ </div>
+</div>
+
+</div>
+
+<h2 class="section-title">Mathematical Analysis</h2>
+
+<div class="math-grid">
+
+<div class="math-card">
+ <small>1. Terrain Function</small>
+ <div class="formula">z = f(x,y)</div>
+ <div class="result">Represents the elevation of the land using two coordinates.</div>
+</div>
+
+<div class="math-card">
+ <small>2. Partial Derivative</small>
+ <div class="formula">∂z / ∂x, ∂z / ∂y</div>
+ <div class="result">Measures the change in elevation along each coordinate direction.</div>
+</div>
+
+<div class="math-card">
+ <small>3. Gradient</small>
+ <div class="formula">∇f = (fx, fy)</div>
+ <div class="result">Indicates the direction of maximum elevation increase.</div>
+</div>
+
+<div class="math-card">
+ <small>4. Gradient Magnitude</small>
+ <div class="formula">|∇f| = √(fx² + fy²)</div>
+ <div class="result">Measures the maximum rate of terrain height change.</div>
+</div>
+
+<div class="math-card">
+ <small>5. Slope Angle</small>
+ <div class="formula">θ = tan⁻¹(|∇f|)</div>
+ <div class="result">Converts gradient magnitude into an angle in degrees.</div>
+</div>
+
+<div class="math-card">
+ <small>6. Hessian Matrix</small>
+ <div class="formula">H = [fxx fxy; fyx fyy]</div>
+ <div class="result">Contains second-order derivatives for curvature analysis.</div>
+</div>
+
+</div>
+
+<h2 class="section-title">Project Methodology</h2>
+
+<div class="panel">
+ <div class="result">
+  <b>01. Terrain modelling:</b> Create a two-variable mathematical elevation function.<br><br>
+  <b>02. Derivative calculation:</b> Calculate partial derivatives and gradients.<br><br>
+  <b>03. Slope analysis:</b> Measure terrain steepness and visualize it using a heatmap.<br><br>
+  <b>04. Graph construction:</b> Represent terrain locations as connected nodes.<br><br>
+  <b>05. Route optimization:</b> Apply Dijkstra's algorithm to find a minimum-cost route.<br><br>
+  <b>06. Visualization:</b> Display the terrain and compare the selected routes.
+ </div>
+</div>
+
+</main>
+
+<footer>
+ TERRAIN EXPLORER · Mathematical Modelling and Route Optimization
+ <br><br>
+ Educational demonstration using simulated terrain data.
+</footer>
+
+
+<script>
+
+// ======================================
+// 1. TERRAIN MATHEMATICAL FUNCTION
+// ======================================
+
+const N = 45;
+const MIN = -8;
+const MAX = 8;
+const STEP = (MAX-MIN)/(N-1);
+
+const weightInput = document.getElementById("weight");
+
+function terrain(x,y){
+ const q = (x-2)**2 + (y-1)**2;
+ return 0.08*(x*x+y*y)+4*Math.exp(-q/5);
+}
+
+// Analytical partial derivatives
+function fx(x,y){
+ const q=(x-2)**2+(y-1)**2;
+ return 0.16*x-(8/5)*(x-2)*Math.exp(-q/5);
+}
+
+function fy(x,y){
+ const q=(x-2)**2+(y-1)**2;
+ return 0.16*y-(8/5)*(y-1)*Math.exp(-q/5);
+}
+
+function gradient(x,y){
+ return Math.hypot(fx(x,y),fy(x,y));
+}
+
+function slopeAngle(x,y){
+ return Math.atan(gradient(x,y))*180/Math.PI;
+}
+
+// ======================================
+// 2. CREATE TERRAIN GRID
+// ======================================
+
+const heights=[];
+const slopes=[];
+
+for(let i=0;i<N;i++){
+ heights[i]=[];
+ slopes[i]=[];
+
+ for(let j=0;j<N;j++){
+  const x=MIN+j*STEP;
+  const y=MIN+i*STEP;
+
+  heights[i][j]=terrain(x,y);
+  slopes[i][j]=slopeAngle(x,y);
+ }
+}
+
+
+// ======================================
+// 3. DIJKSTRA ROUTE ALGORITHM
+// ======================================
+
+const moves=[
+ [-1,0],[1,0],[0,-1],[0,1],
+ [-1,-1],[-1,1],[1,-1],[1,1]
+];
+
+function dijkstra(slopeWeight){
+
+ const start=[0,0];
+ const goal=[N-1,N-1];
+
+ const dist=Array.from(
+  {length:N},
+  ()=>Array(N).fill(Infinity)
+ );
+
+ const prev=Array.from(
+  {length:N},
+  ()=>Array(N).fill(null)
+ );
+
+ dist[0][0]=0;
+
+ const queue=[{cost:0,i:0,j:0}];
+
+ while(queue.length){
+
+  queue.sort((a,b)=>a.cost-b.cost);
+
+  const current=queue.shift();
+  const {cost,i,j}=current;
+
+  if(cost!==dist[i][j]) continue;
+
+  if(i===goal[0] && j===goal[1]) break;
+
+  for(const [di,dj] of moves){
+
+   const ni=i+di;
+   const nj=j+dj;
+
+   if(ni<0||nj<0||ni>=N||nj>=N) continue;
+
+   const dx=dj*STEP;
+   const dy=di*STEP;
+
+   const horizontal=Math.hypot(dx,dy);
+
+   const dz=heights[ni][nj]-heights[i][j];
+
+   const distance3D=Math.hypot(horizontal,dz);
+
+   const averageSlope=(
+    gradient(MIN+j*STEP,MIN+i*STEP)+
+    gradient(MIN+nj*STEP,MIN+ni*STEP)
+   )/2;
+
+   const edgeCost=distance3D*(
+    1+slopeWeight*averageSlope
+   );
+
+   const newCost=cost+edgeCost;
+
+   if(newCost<dist[ni][nj]){
+
+    dist[ni][nj]=newCost;
+    prev[ni][nj]=[i,j];
+
+    queue.push({
+     cost:newCost,
+     i:ni,
+     j:nj
+    });
+   }
+  }
+ }
+
+ const path=[];
+ let i=N-1,j=N-1;
+
+ if(!isFinite(dist[i][j])) return [];
+
+ while(i!==0||j!==0){
+  path.push([i,j]);
+
+  if(!prev[i][j]) return [];
+
+  [i,j]=prev[i][j];
+ }
+
+ path.push([0,0]);
+ return path.reverse();
+}
+
+
+// ======================================
+// 4. ROUTE METRICS
+// ======================================
+
+function routeMetrics(path){
+
+ let distance=0;
+ let totalSlope=0;
+
+ for(let k=1;k<path.length;k++){
+
+  const [i1,j1]=path[k-1];
+  const [i2,j2]=path[k];
+
+  const dx=(j2-j1)*STEP;
+  const dy=(i2-i1)*STEP;
+
+  const dz=heights[i2][j2]-heights[i1][j1];
+
+  distance+=Math.hypot(dx,dy,dz);
+
+  totalSlope+=(
+   gradient(MIN+j1*STEP,MIN+i1*STEP)+
+   gradient(MIN+j2*STEP,MIN+i2*STEP)
+  )/2;
+ }
+
+ return {
+  distance,
+  averageSlope:totalSlope/Math.max(1,path.length-1)
+ };
+}
+
+
+// ======================================
+// 5. HEATMAP DRAWING
+// ======================================
+
+const heatCanvas=document.getElementById("heatmap");
+const ctx=heatCanvas.getContext("2d");
+
+function drawHeatmap(){
+
+ const w=heatCanvas.clientWidth;
+ const h=heatCanvas.clientHeight;
+
+ heatCanvas.width=w*devicePixelRatio;
+ heatCanvas.height=h*devicePixelRatio;
+
+ ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+
+ const cellW=w/N;
+ const cellH=h/N;
+
+ for(let i=0;i<N;i++){
+  for(let j=0;j<N;j++){
+
+   const s=slopes[i][j];
+
+   let color;
+
+   if(s<15) color="#5da878";
+   else if(s<30) color="#e6c75a";
+   else color="#d9695e";
+
+   ctx.fillStyle=color;
+   ctx.fillRect(j*cellW,i*cellH,cellW+1,cellH+1);
+  }
+ }
+
+ // Draw both routes
+ drawPathOnCanvas(shortestPath,"#2879d8",w,h);
+ drawPathOnCanvas(optimizedPath,"#ffffff",w,h);
+
+ // Start and destination
+ ctx.fillStyle="#163d2d";
+ ctx.beginPath();
+ ctx.arc(cellW/2,cellH/2,6,0,Math.PI*2);
+ ctx.fill();
+
+ ctx.fillStyle="#163d2d";
+ ctx.beginPath();
+ ctx.arc(w-cellW/2,h-cellH/2,6,0,Math.PI*2);
+ ctx.fill();
+}
+
+function drawPathOnCanvas(path,color,w,h){
+
+ if(!path.length) return;
+
+ ctx.beginPath();
+
+ path.forEach(([i,j],k)=>{
+  const px=(j+0.5)*w/N;
+  const py=(i+0.5)*h/N;
+
+  if(k===0) ctx.moveTo(px,py);
+  else ctx.lineTo(px,py);
+ });
+
+ ctx.strokeStyle=color;
+ ctx.lineWidth=2.5;
+ ctx.stroke();
+}
+
+
+// ======================================
+// 6. THREE.JS 3D TERRAIN
+// ======================================
+
+let scene,camera,renderer,controls;
+let terrainMesh;
+let shortestLine,optimizedLine;
+let shortestPath=[],optimizedPath=[];
+
+function initialize3D(){
+
+ const container=document.getElementById("terrain");
+
+ scene=new THREE.Scene();
+ scene.background=new THREE.Color("#edf5ef");
+
+ camera=new THREE.PerspectiveCamera(
+  45,
+  container.clientWidth/container.clientHeight,
+  0.1,1000
+ );
+
+ camera.position.set(22,20,25);
+
+ renderer=new THREE.WebGLRenderer({antialias:true});
+ renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+ renderer.setSize(container.clientWidth,container.clientHeight);
+
+ container.appendChild(renderer.domElement);
+
+ if(THREE.OrbitControls){
+  controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;
+ }
+
+ scene.add(new THREE.AmbientLight(0xffffff,1.5));
+
+ const light=new THREE.DirectionalLight(0xffffff,2);
+ light.position.set(10,20,10);
+ scene.add(light);
+
+ createTerrainMesh();
+
+ function animate(){
+  requestAnimationFrame(animate);
+  if(controls) controls.update();
+  renderer.render(scene,camera);
+ }
+
+ animate();
+
+ window.addEventListener("resize",()=>{
+  camera.aspect=container.clientWidth/container.clientHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(container.clientWidth,container.clientHeight);
+ });
+}
+
+
+// ======================================
+// 7. TERRAIN MESH AND SLOPE COLORS
+// ======================================
+
+function createTerrainMesh(){
+
+ if(terrainMesh){
+  scene.remove(terrainMesh);
+  terrainMesh.geometry.dispose();
+  terrainMesh.material.dispose();
+ }
+
+ const geometry=new THREE.PlaneGeometry(
+  16,16,N-1,N-1
+ );
+
+ geometry.rotateX(-Math.PI/2);
+
+ const positions=geometry.attributes.position;
+ const colors=[];
+
+ for(let i=0;i<N;i++){
+  for(let j=0;j<N;j++){
+
+   const index=i*N+j;
+   const x=MIN+j*STEP;
+   const y=MIN+i*STEP;
+
+   positions.setY(index,heights[i][j]);
+
+   const s=slopes[i][j];
+
+   let color;
+
+   if(s<15) color=new THREE.Color("#5da878");
+   else if(s<30) color=new THREE.Color("#e6c75a");
+   else color=new THREE.Color("#d9695e");
+
+   colors.push(color.r,color.g,color.b);
+  }
+ }
+
+ geometry.setAttribute(
+  "color",
+  new THREE.Float32BufferAttribute(colors,3)
+ );
+
+ geometry.computeVertexNormals();
+
+ const material=new THREE.MeshStandardMaterial({
+  vertexColors:true,
+  side:THREE.DoubleSide,
+  roughness:0.85
+ });
+
+ terrainMesh=new THREE.Mesh(geometry,material);
+ scene.add(terrainMesh);
+}
+
+
+// ======================================
+// 8. DRAW ROUTE ON 3D TERRAIN
+// ======================================
+
+function draw3DPath(path,color){
+
+ if(!path.length) return null;
+
+ const points=path.map(([i,j])=>{
+  return new THREE.Vector3(
+   -8+j*STEP,
+   heights[i][j]+0.08,
+   -8+i*STEP
+  );
+ });
+
+ const curve=new THREE.CatmullRomCurve3(points);
+
+ const geometry=new THREE.TubeGeometry(
+  curve,
+  Math.max(50,points.length*2),
+  0.045,
+  6,
+  false
+ );
+
+ const material=new THREE.MeshBasicMaterial({color});
+
+ const line=new THREE.Mesh(geometry,material);
+
+ scene.add(line);
+
+ return line;
+}
+
+
+// ======================================
+// 9. UPDATE ROUTES
+// ======================================
+
+function updateRoutes(){
+
+ const weight=Number(weightInput.value);
+
+ shortestPath=dijkstra(0);
+ optimizedPath=dijkstra(weight);
+
+ const shortest=routeMetrics(shortestPath);
+ const optimized=routeMetrics(optimizedPath);
+
+ if(shortestLine) scene.remove(shortestLine);
+ if(optimizedLine) scene.remove(optimizedLine);
+
+ if(shortestLine){
+  shortestLine.geometry.dispose();
+  shortestLine.material.dispose();
+ }
+
+ if(optimizedLine){
+  optimizedLine.geometry.dispose();
+  optimizedLine.material.dispose();
+ }
+
+ shortestLine=draw3DPath(shortestPath,"#2879d8");
+ optimizedLine=draw3DPath(optimizedPath,"#e24d46");
+
+ document.getElementById("distanceStat").textContent=
+  optimized.distance.toFixed(2)+" units";
+
+ document.getElementById("slopeStat").textContent=
+  (optimized.averageSlope*100).toFixed(1)+"%";
+
+ document.getElementById("routeInfo").innerHTML=
+  "<b>Shortest route:</b> "+shortest.distance.toFixed(2)+
+  " units<br><b>Slope-aware route:</b> "+
+  optimized.distance.toFixed(2)+
+  " units<br><b>Shortest route cost:</b> "+
+  shortestPath.length+
+  " points<br><b>Optimized route points:</b> "+
+  optimizedPath.length+
+  "<br><b>Slope penalty:</b> "+weight;
+
+ drawHeatmap();
+}
+
+
+// ======================================
+// 10. POINT MATHEMATICAL ANALYSIS
+// ======================================
+
+function analyzePoint(){
+
+ const px=Number(document.getElementById("pointX").value);
+ const py=Number(document.getElementById("pointY").value);
+
+ if(!Number.isFinite(px)||!Number.isFinite(py)||
+ px<MIN||px>MAX||py<MIN||py>MAX){
+
+  alert("Enter coordinates between -8 and 8.");
+  return;
+ }
+
+ const height=terrain(px,py);
+
+ const gx=fx(px,py);
+ const gy=fy(px,py);
+
+ const magnitude=Math.hypot(gx,gy);
+
+ const angle=Math.atan(magnitude)*180/Math.PI;
+
+ const percentage=magnitude*100;
+
+ // Second derivatives using numerical differences
+ const h=0.0001;
+
+ const fxx=(fx(px+h,py)-fx(px-h,py))/(2*h);
+ const fyy=(fy(px,py+h)-fy(px,py-h))/(2*h);
+ const fxy=(fx(px,py+h)-fx(px,py-h))/(2*h);
+
+ // Directional derivative in direction (1,1)
+ const directional=(gx+gy)/Math.sqrt(2);
+
+ document.getElementById("pointResult").innerHTML=`
+ <b>Coordinates:</b> (${px}, ${py})<br>
+ <b>Elevation:</b> ${height.toFixed(4)}<br>
+ <b>Partial derivative fx:</b> ${gx.toFixed(4)}<br>
+ <b>Partial derivative fy:</b> ${gy.toFixed(4)}<br>
+ <b>Gradient magnitude:</b> ${magnitude.toFixed(4)}<br>
+ <b>Maximum slope angle:</b> ${angle.toFixed(2)}°<br>
+ <b>Maximum slope percentage:</b> ${percentage.toFixed(2)}%<br>
+ <b>Directional derivative (1,1):</b> ${directional.toFixed(4)}<br>
+ <b>fxx:</b> ${fxx.toFixed(4)}<br>
+ <b>fyy:</b> ${fyy.toFixed(4)}<br>
+ <b>fxy:</b> ${fxy.toFixed(4)}<br>
+ <b>Hessian determinant:</b> ${(fxx*fyy-fxy*fxy).toFixed(4)}
+ `;
+}
+
+
+// ======================================
+// 11. RESET AND START
+// ======================================
+
+function resetSettings(){
+ weightInput.value=1.5;
+ document.getElementById("weightValue").textContent="1.5";
+ updateRoutes();
+}
+
+weightInput.addEventListener("input",()=>{
+ document.getElementById("weightValue").textContent=
+  Number(weightInput.value).toFixed(1);
+});
+
+document.getElementById("gridStat").textContent=N+" × "+N;
+
+initialize3D();
+updateRoutes();
+analyzePoint();
+
+</script>
+
+</body>
+</html>
